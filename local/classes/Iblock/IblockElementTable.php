@@ -18,13 +18,12 @@ class IblockElementTable extends ElementTable
         $query->setSelect([ // поля таблицы
             'ID',
             'NAME',
-            'CODE',
-            'псевдоним поля' => 'поле'
+			'PREVIEW_TEXT'
         ]);
 
-        $query->addSelect('поле', 'псевдоним поля');
+        //$query->addSelect('поле', 'псевдоним поля');
 
-        $query->addSelect(new ExpressionField('COUNT_ID', 'COUNT(%s)', ['ID']));
+        //$query->addSelect(new ExpressionField('COUNT_ID', 'COUNT(%s)', ['ID']));
     }
 
     public static function withRuntime(Query $query)
@@ -62,36 +61,36 @@ class IblockElementTable extends ElementTable
                 ElementPropertyTable::class,
                 [
                     'ref.IBLOCK_ELEMENT_ID' => 'this.ID',
-                    'ref.IBLOCK_PROPERTY_ID' => new SqlExpression('?', Constants::PROPERTY)
+                    'ref.IBLOCK_PROPERTY_ID' => new SqlExpression('?', Constants::IB_PROP_TESTTEST_VALUE)
                 ]
             )
         );
 
-        $query->addSelect('PROPERTY.VALUE', 'PROPERTY_VALUE'); // выбор значения поля
+        $query->addSelect('PROPERTY.VALUE', 'VALUE'); // выбор значения поля
     }
 
     public static function withFilter(Query $query) // фильтрация
     {
-        $query->setFilter([
-            'поле' => 'фильтр',
-            '!=поле1' => 'фильтр',
-            '<=поле2' => 'фильтр'
-        ]);
+        //$query->setFilter([
+        //    'поле' => 'фильтр',
+        //    '!=поле1' => 'фильтр',
+        //    '<=поле2' => 'фильтр'
+        //]);
 
-        $query->addFilter('поле', 'фильтр');
+        $query->addFilter('ACTIVE', 'Y');
 
-        $query->addFilter(null, [
-            'LOGIC' => 'AND',
-            'поле' => 'фильтр',
-            'поле1' => 'фильтр'
-        ]);
+        //$query->addFilter(null, [
+        //    'LOGIC' => 'AND',
+        //    'поле' => 'фильтр',
+        //    'поле1' => 'фильтр'
+        //]);
 
     }
 
     public static function withOrder(Query $query) //сортировка
     {
         $query->setOrder([
-            'поле' => 'сортировка', // 'ASC' - по возрастанию, 'DESC' - по убыванию
+            'ID' => 'ASC', // 'ASC' - по возрастанию, 'DESC' - по убыванию
         ]);
     }
 

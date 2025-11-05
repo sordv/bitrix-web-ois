@@ -9,13 +9,15 @@ use Legacy\Iblock\IblockElementTable;
 
 class TestTest
 {
-	public static function get($arRequest)
+	public static function getElement($arRequest)
 	{
 		if (Loader::includeModule('iblock')) { // чтобы работать с элементами модуля, необходимо его подключить, в примере работаем с инфоблоком
 			$query = IblockElementTable::query()
 				->withSelect()
+				->withRuntimeProperties()
 				->addFilter('IBLOCK_ID', Constants::IB_TESTTEST)
-				->withOrder(['SORT' => 'ASC'])
+				->withFilter()
+				->withOrder()
 				->withPage($arRequest['limit'], $arRequest['page'])
 			;
 			$count = $query->queryCountTotal(); // количество записей ответа
