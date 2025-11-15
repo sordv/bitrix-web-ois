@@ -27,6 +27,9 @@ class Block {
 
     public static function getList($arRequest) {
         $courseId = $arRequest['courseId'];
+        if (empty($courseId)) {
+            throw new \Exception('Не указан идентификатор курса');
+        }
 
         $params = [
             'filter' => [
