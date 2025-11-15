@@ -9,15 +9,15 @@ class Block {
     public static function create($arRequest) {
         // Все ли поля должны быть заполнены? Какая проверка нужна?
         $params = [
-            'UF_NAME' => $arRequest['name'],
+            'UF_NAME'        => $arRequest['name'],
             'UF_DESCRIPTION' => $arRequest['description'],
-            'UF_COURSE_ID' => $arRequest['courseId'],
-            'UF_SORT_ORDER' => $arRequest['sortOrder'],
-            'UF_FILE' => $arRequest['file'],
-            'UF_TYPE' => $arRequest['type'],
-            'UF_DATASTART' => $arRequest['dataStart'],
-            'UF_DATAEND' => $arRequest['dataEnd'],
-            'UF_MAXSCORE' => $arRequest['maxScore'],
+            'UF_COURSE_ID'   => $arRequest['courseId'],
+            'UF_SORT_ORDER'  => $arRequest['sortOrder'],
+            'UF_FILE'        => $arRequest['file'],
+            'UF_TYPE'        => $arRequest['type'],
+            'UF_DATASTART'   => $arRequest['dataStart'],
+            'UF_DATAEND'     => $arRequest['dataEnd'],
+            'UF_MAXSCORE'    => $arRequest['maxScore'],
         ];
 
         $blockId = Entity::getInstance()->add(Constants::HLBLOCK_EDUCATIONAL_BLOCK, $params);
@@ -98,16 +98,16 @@ class Block {
 
     private static function mapBlock($block) {
         return [
-            'code' => $block['ID'],
-            'name' => $block['UF_NAME'],
+            'code'        => $block['ID'],
+            'name'        => $block['UF_NAME'],
             'description' => $block['UF_DESCRIPTION'],
-            'courseId' => $block['UF_COURSE_ID'],
-            'sortOrder' => $block['UF_SORT_ORDER'],
-            'file' => $block['UF_FILE'],
-            'type' => $block['UF_TYPE'],
-            'dataStart' => $block['UF_DATASTART'],
-            'dataEnd' => $block['UF_DATAEND'],
-            'maxScore' => $block['UF_MAXSCORE'],
+            'courseId'    => $block['UF_COURSE_ID'],
+            'sortOrder'   => $block['UF_SORT_ORDER'],
+            'file'        => $block['UF_FILE'],
+            'type'        => $block['UF_TYPE'],
+            'dataStart'   => $block['UF_DATASTART'],
+            'dataEnd'     => $block['UF_DATAEND'],
+            'maxScore'    => $block['UF_MAXSCORE'],
         ];
     }
 }

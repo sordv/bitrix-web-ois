@@ -2,10 +2,6 @@
 
 namespace Legacy\API;
 
-use Legacy\General\Constants;
-use Bitrix\Iblock\ElementTable;
-use Bitrix\Main\Loader;
-
 class Auth
 {
     public static function login($arRequest) {
