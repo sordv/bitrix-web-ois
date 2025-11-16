@@ -20,12 +20,21 @@ class Block {
             'UF_MAXSCORE'    => $arRequest['maxScore'],
         ];
 
-        $blockId = Entity::getInstance()->add(Constants::HLBLOCK_EDUCATIONAL_BLOCK, $params);
+        $blockId = Entity::getInstance()->add(Constants::HLBLOCK_BLOCKS, $params);
 
-        return self::getBlockById($blockId);
+        return self::getBlockByCode($blockId);
     }
 
-    public static function getList($arRequest) {
+    public static function get($arRequest) {
+        $blockId = $arRequest['blockId'];
+        if (empty($blockId)) {
+            throw new \Exception('Не указан идентификатор блока');
+        }
+
+        return self::getBlockByCode($blockId);
+    }
+
+    public static function getListByCourse($arRequest) {
         $courseId = $arRequest['courseId'];
         if (empty($courseId)) {
             throw new \Exception('Не указан идентификатор курса');
@@ -36,7 +45,7 @@ class Block {
                 'UF_COURSE_ID' => $courseId
             ]
         ];
-        $blocks = Entity::getInstance()->getList(Constants::HLBLOCK_EDUCATIONAL_BLOCK, $params);
+        $blocks = Entity::getInstance()->getList(Constants::HLBLOCK_BLOCKS, $params);
 
         $processedBlocks = [];
         foreach ($blocks as $key => $block) {
@@ -52,7 +61,7 @@ class Block {
             throw new \Exception('Не указан идентификатор блока');
         }
 
-        $oldBlock = self::getBlockById($blockId);
+        $oldBlock = self::getBlockByCode($blockId);
         if (!$oldBlock) {
             throw new \Exception('Блок не найден');
         }
@@ -69,9 +78,9 @@ class Block {
             'UF_MAXSCORE'    => $arRequest['maxScore']    ?? $oldBlock['maxScore'],
         ];
 
-        Entity::getInstance()->update(Constants::HLBLOCK_EDUCATIONAL_BLOCK, $blockId, $params);
+        Entity::getInstance()->update(Constants::HLBLOCK_BLOCKS, $blockId, $params);
 
-        return self::getBlockById($blockId);
+        return self::getBlockByCode($blockId);
     }
 
     public static function delete($arRequest) {
@@ -80,19 +89,19 @@ class Block {
             throw new \Exception('Не указан идентификатор блока');
         }
 
-        $deletingBlock = self::getBlockById($blockId);
+        $deletingBlock = self::getBlockByCode($blockId);
         if (!$deletingBlock) {
             throw new \Exception('Блок не найден');
         }
 
-        Entity::getInstance()->delete(Constants::HLBLOCK_EDUCATIONAL_BLOCK, $blockId);
+        Entity::getInstance()->delete(Constants::HLBLOCK_BLOCKS, $blockId);
     }
 
-    private static function getBlockById($id)
+    private static function getBlockByCode($code)
     {
-        $block = Entity::getInstance()->getRow(Constants::HLBLOCK_EDUCATIONAL_BLOCK, [
+        $block = Entity::getInstance()->getRow(Constants::HLBLOCK_BLOCKS, [
             'filter' => [
-                'ID' => $id
+                'ID' => $code
             ]
         ]);
 
