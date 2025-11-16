@@ -25,6 +25,29 @@ class Auth
         }
     }
 
+    public static function getRole($id) {
+        global $USER;
+
+        $groups = $USER::GetUserGroup($id);
+
+        $rs = \CGroup::GetList($by="c_sort", $order="asc", [
+            "ID" => implode("|", $groups)
+        ]);
+
+
+        $names = [];
+        while ($group = $rs->Fetch()) {
+            $names[] = $group["NAME"];
+        }
+
+        if (in_array("Преподаватели", $names)) {
+            return "teacher";
+        } else if (in_array("Студенты", $names)) {
+            return "student";
+        }
+        return "";
+    }
+
     public static function logout() {
         global $USER;
 
