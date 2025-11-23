@@ -25,18 +25,24 @@ class Auth
         }
     }
 
-    public static function getRole($id) {
+    public static function logout() {
         global $USER;
 
-        $groups = $USER::GetUserGroup($id);
+        $USER->Logout();
+    }
 
-        $rs = \CGroup::GetList($by="c_sort", $order="asc", [
+    public static function getRole() {
+        global $USER;
+
+        $userId = $USER->GetID();
+        $groups = $USER::GetUserGroup($userId);
+
+        $groupList = \CGroup::GetList($by="c_sort", $order="asc", [
             "ID" => implode("|", $groups)
         ]);
 
-
         $names = [];
-        while ($group = $rs->Fetch()) {
+        while ($group = $groupList->Fetch()) {
             $names[] = $group["NAME"];
         }
 
@@ -46,11 +52,5 @@ class Auth
             return "student";
         }
         return "";
-    }
-
-    public static function logout() {
-        global $USER;
-
-        $USER->Logout();
     }
 }

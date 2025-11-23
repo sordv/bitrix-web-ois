@@ -13,12 +13,20 @@ class Course {
         $courseId = Entity::getInstance()->add(Constants::HLBLOCK_COURSES, $params);
 
         $teachers = $arRequest['teachers'];
-        foreach ($teachers as $key => $teacherId) {
+        if (count($teachers) == 0) {
+            throw new \Exception('Не указаны идентификаторы преподавателей');
+        }
+
+        foreach ($teachers as $teacherId) {
             self::addTeacherToCourse($courseId, $teacherId);
         }
 
         $students = $arRequest['students'];
-        foreach ($students as $key => $studentId) {
+        if (count($students) == 0) {
+            throw new \Exception('Не указаны идентификаторы студентов');
+        }
+
+        foreach ($students as $studentId) {
             self::addStudentToCourse($courseId, $studentId);
         }
 
@@ -34,29 +42,63 @@ class Course {
         return self::getCourseByCode($courseId);
     }
 
-    public static function getList($arRequest) {
+    public static function search($arRequest) {
         $userId = $arRequest['userId'];
-        $role = $arRequest['role'];
         if (empty($userId)) {
             throw new \Exception('Не указан идентификатор студента или преподавателя');
         }
 
-        $idField = ($role == "teacher") ? 'UF_TEACHER_ID' : 'UF_STUDENT_ID';
-        $hlBlock = ($role == "teacher") ? Constants::HLBLOCK_COURSES_TEACHERS_REL: Constants::HLBLOCK_COURSES_STUDENTS_REL;
+        $role = Auth::getRole();
+        if (!in_array($role, ['teacher', 'student'], true)) {
+            throw new \Exception('Пользователь не входит в группу преподавателей или студентов');
+        }
+
+        $name = trim($arRequest['name'] ?? '');
+
+        $idField = ($role === "teacher") ? 'UF_TEACHER_ID' : 'UF_STUDENT_ID';
+        $hlBlock = ($role === "teacher") ? Constants::HLBLOCK_COURSES_TEACHERS_REL : Constants::HLBLOCK_COURSES_STUDENTS_REL;
         $rels = Entity::getInstance()->getList($hlBlock, [
-            'filter' => [
-                $idField => $userId
-            ]
+            'filter' => [$idField => $userId]
+        ]);
+
+        $userCourseIds = self::mapRels($rels, 'UF_COURSE_ID');
+        if (!$userCourseIds) {
+            return [];
+        }
+
+        $params = [
+            'ID' => $userCourseIds
+        ];
+
+        if ($name !== '') {
+            $params['%UF_NAME'] = $name;
+        }
+
+        $courses = Entity::getInstance()->getList(Constants::HLBLOCK_COURSES, [
+            'filter' => $params
         ]);
 
         $processedCourses = [];
-        foreach ($rels as $rel) {
-            $courseId = $rel['UF_COURSE_ID'];
-            $course = self::getCourseByCode($courseId);
+        foreach ($courses as $course) {
+            $course = self::getCourseByCode($course['ID']);
             $processedCourses[] = $course;
         }
 
         return $processedCourses;
+    }
+
+    public static function delete($arRequest) {
+        $courseId = $arRequest['courseId'];
+        if (empty($courseId)) {
+            throw new \Exception('Не указан идентификатор курса');
+        }
+
+        $deletingCourse = self::getBlockByCode($courseId);
+        if (!$deletingCourse) {
+            throw new \Exception('Курс не найден');
+        }
+
+        Entity::getInstance()->delete(Constants::HLBLOCK_COURSES, $courseId);
     }
 
     public static function addTeacher($arRequest) {
@@ -118,22 +160,14 @@ class Course {
                 'UF_COURSE_ID' => $code
             ]
         ]);
-        $rels = [];
-        foreach ($coursesTeachersRels as $key => $rel) {
-            $rels[] = $rel['UF_TEACHER_ID'];
-        }
-        $coursesTeachersRels = $rels;
+        $coursesTeachersRels = self::mapRels($coursesTeachersRels, 'UF_TEACHER_ID');
 
         $coursesStudentsRels = Entity::getInstance()->getList(Constants::HLBLOCK_COURSES_STUDENTS_REL, [
             'filter' => [
                 'UF_COURSE_ID' => $code
             ]
         ]);
-        $rels = [];
-        foreach ($coursesStudentsRels as $key => $rel) {
-            $rels[] = $rel['UF_STUDENT_ID'];
-        }
-        $coursesStudentsRels = $rels;
+        $coursesStudentsRels = self::mapRels($coursesStudentsRels, 'UF_STUDENT_ID');
 
         return self::mapCourse($course, $coursesTeachersRels, $coursesStudentsRels);
     }
@@ -145,5 +179,9 @@ class Course {
             'teachers' => $coursesTeachersRels,
             'students' => $coursesStudentsRels
         ];
+    }
+
+    private static function mapRels($rels, $field) {
+        return array_column($rels, $field);
     }
 }

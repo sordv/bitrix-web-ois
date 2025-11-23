@@ -34,29 +34,34 @@ class Block {
         return self::getBlockByCode($blockId);
     }
 
-    public static function getListByCourse($arRequest) {
+    public static function search($arRequest) {
         $courseId = $arRequest['courseId'];
         if (empty($courseId)) {
             throw new \Exception('Не указан идентификатор курса');
         }
 
-        $params = [
-            'filter' => [
-                'UF_COURSE_ID' => $courseId
-            ]
-        ];
-        $blocks = Entity::getInstance()->getList(Constants::HLBLOCK_BLOCKS, $params);
+        $name = trim($arRequest['name'] ?? '');
+
+        $params = ['UF_COURSE_ID' => $courseId];
+
+        if ($name !== '') {
+            $params['%UF_NAME'] = $name;
+        }
+
+        $blocks = Entity::getInstance()->getList(Constants::HLBLOCK_BLOCKS, [
+            'filter' => $params
+        ]);
 
         $processedBlocks = [];
-        foreach ($blocks as $key => $block) {
-            $processedBlocks[] = self::mapBlock($block);
+        foreach ($blocks as $block) {
+            $processedBlocks[] = self::getBlockByCode($block['ID']);
         }
 
         return $processedBlocks;
     }
 
     public static function update($arRequest) {
-        $blockId = (int)$arRequest['blockId'];
+        $blockId = $arRequest['blockId'];
         if (empty($blockId)) {
             throw new \Exception('Не указан идентификатор блока');
         }
@@ -84,7 +89,7 @@ class Block {
     }
 
     public static function delete($arRequest) {
-        $blockId = (int)$arRequest['blockId'];
+        $blockId = $arRequest['blockId'];
         if (empty($blockId)) {
             throw new \Exception('Не указан идентификатор блока');
         }
