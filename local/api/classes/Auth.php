@@ -31,26 +31,27 @@ class Auth
         $USER->Logout();
     }
 
-    public static function getRole() {
+    public static function getUser()
+    {
         global $USER;
 
-        $userId = $USER->GetID();
-        $groups = $USER::GetUserGroup($userId);
-
-        $groupList = \CGroup::GetList($by="c_sort", $order="asc", [
-            "ID" => implode("|", $groups)
-        ]);
-
-        $names = [];
-        while ($group = $groupList->Fetch()) {
-            $names[] = $group["NAME"];
+        if (!$USER->IsAuthorized()) {
+            throw new \Exception('Пользователь не авторизован');
         }
 
-        if (in_array("Преподаватели", $names)) {
-            return "teacher";
-        } else if (in_array("Студенты", $names)) {
-            return "student";
-        }
-        return "";
+        $rsUser = \CUser::GetByID($USER->GetID());
+        $arUser = $rsUser->Fetch();
+
+        return self::mapUser($arUser);
+    }
+
+    private static function mapUser($user) {
+        return [
+            'code'        => $user['ID'],
+            'name'        => $user['NAME'],
+            'lastName'    => $user['LAST_NAME'],
+            'patronymic'  => $user['SECOND_NAME'],
+            'email'       => $user['EMAIL'],
+        ];
     }
 }
