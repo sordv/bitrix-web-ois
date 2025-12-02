@@ -49,6 +49,13 @@ class Block {
             ]
         ]);
 
+        $fileUrl = null;
+        if (!empty($block['UF_FILE'])) {
+            $fileUrl = self::getFileUrl($block['UF_FILE']);
+        }
+
+        $block['fileUrl'] = $fileUrl;
+
         return self::mapBlock($block);
     }
 
@@ -59,11 +66,41 @@ class Block {
             'description' => $block['UF_DESCRIPTION'],
             'courseId'    => $block['UF_COURSE_ID'],
             'sortOrder'   => $block['UF_SORT_ORDER'],
-            'file'        => $block['UF_FILE'],
+            'file'        => $block['fileUrl'],
             'type'        => $block['UF_TYPE'],
-            'dataStart'   => $block['UF_DATASTART'],
-            'dataEnd'     => $block['UF_DATAEND'],
+            'dataStart'   => strval($block['UF_DATASTART']),
+            'dataEnd'     => strval($block['UF_DATAEND']),
             'maxScore'    => $block['UF_MAXSCORE'],
         ];
+    }
+
+    private static function getFileUrl($fileId)
+    {
+        if (!class_exists('CFile')) {
+            if (\Bitrix\Main\Loader::includeModule('main')) {
+
+            } else {
+                return null;
+            }
+        }
+
+        if (empty($fileId)) {
+            return null;
+        }
+
+        $fileArray = \CFile::GetFileArray($fileId);
+
+        if (!$fileArray || empty($fileArray['SRC'])) {
+            return null;
+        }
+
+        $protocol = $_SERVER['HTTPS'] ?? 'off' === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+        if (strpos($fileArray['SRC'], 'http') === 0) {
+            return $fileArray['SRC'];
+        }
+
+        return $protocol . '://' . $host . $fileArray['SRC'];
     }
 }
