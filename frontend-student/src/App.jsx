@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
 import Courses from './pages/Courses'
 import Blocks from './pages/Blocks'
 import Answer from './pages/Answer'
@@ -18,9 +18,7 @@ export default function App() {
     <AuthProvider>
       <div className="app">
         <header className="header">
-          <div className="header-inner">
-            <Link to="/courses" className="logo">MiniLMS</Link>
-          </div>
+          <HeaderBar />
         </header>
         <main className="container" role="main">
           <Routes>
@@ -33,5 +31,47 @@ export default function App() {
         </main>
       </div>
     </AuthProvider>
+  )
+}
+
+function HeaderBar() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  async function handleLogout() {
+    try {
+      await logout()
+    } catch (e) {
+      console.error('Logout failed', e)
+    } finally {
+      navigate('/login', { replace: true })
+    }
+  }
+
+  const displayName = user
+    ? (() => {
+        const wrapper = user.result || user
+        const last = (wrapper.lastName || wrapper.surname || '').toString().trim()
+        const first = (wrapper.name || wrapper.firstName || wrapper.first || '').toString().trim()
+        const patron = (wrapper.patronymic || wrapper.middleName || '').toString().trim()
+        const parts = [last, first, patron].filter(Boolean)
+        if (parts.length) return parts.join(' ')
+        return (wrapper.fullName || wrapper.name || wrapper.login || '').toString().trim()
+      })()
+    : ''
+
+  const showActions = location && location.pathname !== '/login'
+
+  return (
+    <div className="header-inner">
+      <Link to="/courses" className="logo">MiniLMS</Link>
+      {showActions && (
+        <div className="header-actions">
+          <div className="user-name">{displayName}</div>
+          <button className="btn secondary" onClick={handleLogout}>Выйти</button>
+        </div>
+      )}
+    </div>
   )
 }
