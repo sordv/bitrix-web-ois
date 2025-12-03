@@ -24,3 +24,6 @@ restore.php
 google.php
 yandex.php
 .htaccess
+
+frontend-student/node_modules
+frontend-student/dist
